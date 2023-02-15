@@ -1,0 +1,15 @@
+version: '3'
+services:
+  certbot:
+    build:
+      context: docker/certbot
+      args:
+        - SCRIPT_UID
+        - SCRIPT_GID
+    volumes:
+      - ./config/www/certbot:/var/www/certbot:rw
+      - ./config/certbot:/etc/letsencrypt:rw
+      - ./config/certbot-lib:/var/lib/letsencrypt:rw
+      - ./logs:/var/log:rw       # redirect to console?
+    networks:
+      - fvtt

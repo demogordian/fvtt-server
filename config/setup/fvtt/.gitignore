@@ -1,0 +1,19 @@
+
+# Manage systems externally
+#/Data/systems/*
+#!/Data/systems/README.md
+
+# Manage modules externally
+#/Data/modules/
+
+# Manage worlds externally
+/Data/worlds/**
+!/Data/worlds/README.txt
+
+
+# Don't manage logs
+/Logs/**
+
+# Ignore specific cache files
+/Data/DigDownCache.json
+/Data/moulinette/**/index.json

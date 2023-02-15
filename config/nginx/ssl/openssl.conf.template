@@ -1,0 +1,20 @@
+[req]
+default_bits = 2048
+encrypt_key = no
+utf8 = yes
+distinguished_name = req_distinguished_name
+x509_extensions = v3_req
+prompt = no
+
+[req_distinguished_name]
+O  = ${SSL_CERT_ORG}
+OU = ${SSL_CERT_UNIT}
+CN = ${FQDN}
+
+[v3_req]
+keyUsage = critical, digitalSignature, keyEncipherment, keyAgreement      
+extendedKeyUsage = serverAuth
+subjectAltName = @alt_names
+
+[alt_names]
+DNS.1 = ${FQDN}

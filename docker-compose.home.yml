@@ -1,0 +1,12 @@
+version: '3'
+services:
+
+# fvtt breaks on read-only volumes
+#
+#  fvtt:
+#    volumes:
+#      - ./mount/data/modules/ccvtt:/var/lib/fvtt/Data/data/modules/ccvtt:ro
+
+  nginx:
+    ports:
+      - "${NGINX_LOCAL_PORT}:8000"

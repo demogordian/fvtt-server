@@ -1,0 +1,37 @@
+# FVTT runtime in separate repo
+/config/fvtt/
+
+# certs
+/config/certbot/**
+!/config/certbot/README.md
+/config/nginx/ssl/**
+/config/nginx/ssl/dhparams.pem
+!/config/nginx/ssl/openssl.conf.template
+
+# oauth authorized email list, custom logos, etc (keep default logo)
+/config/oauth/**
+!/config/oauth/vtt-512.png
+
+# logs
+/logs/**
+!/logs/nginx/
+/logs/nginx/**
+!/logs/nginx/README.md
+
+# FVTT server installs
+/server/**
+!/server/README.md
+
+# local mounts (these are backed up or downloaded separately)
+/mount/**
+!/mount/README.md
+
+# Ignore .env file (persist to .env.template)
+/.env
+
+# Misc ignores
+*.swp
+*~
+.DS_Store
+**/._*
+**/local/

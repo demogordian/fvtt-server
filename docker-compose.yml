@@ -1,0 +1,46 @@
+version: '3'
+services:
+  fvtt:
+    build:
+      context: docker/fvtt
+      args:
+        - SCRIPT_UID
+        - SCRIPT_GID
+    hostname: fvtt
+    ports: 
+      - "${FVTT_PORT}:30000"
+    volumes:
+      - ./server:/usr/local/fvtt:ro  # /opt/fvtt points to /usr/local/fvtt/current
+      - ./config/fvtt:/var/lib/fvtt:rw
+      - ./mount/ext:/var/lib/fvtt/Data/ext:ro
+#      - ./server/current/resources/app/public/icons:/var/lib/fvtt/Data/icons/fvtt_icons:ro # hack to group icons
+    restart: "unless-stopped"
+    networks:
+      - fvtt
+  nginx:
+    image: nginx:latest
+    ports:
+      - "${HTTP_PORT}:80"
+      - "${HTTPS_PORT}:443"
+      - "${DDB_PROXY_PORT}:3333"
+    env_file:
+      - .env
+    volumes:
+      - ./config/nginx:/etc/nginx/templates:ro
+      - ./config/www:/var/www:ro
+      - ./logs:/var/log:rw       # redirect to console?
+    restart: "unless-stopped"
+    depends_on:
+      - fvtt
+      - ddb-proxy
+    networks:
+      - fvtt
+  ddb-proxy:
+    image: ghcr.io/mrprimate/ddb-proxy:latest
+    restart: "unless-stopped"
+    networks:
+      - fvtt
+
+networks:
+  fvtt:
+

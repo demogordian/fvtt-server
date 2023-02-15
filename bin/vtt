@@ -1,0 +1,173 @@
+#!/usr/bin/env bash
+
+#set -x
+set -e
+
+# verify vars
+if [[ -z "$VTT_DIR" ]] ; then
+    echo "VTT_DIR missing (must source vttenv)"
+    exit 1
+elif [[ -z "$SCRIPT_UID" ]] ; then
+    echo "SCRIPT_UID missing (must source vttenv)"
+    exit 1
+elif [[ -z "$SCRIPT_GID" ]] ; then
+    echo "SCRIPT_GID missing (must source vttenv)"
+    exit 1
+fi
+
+# verify template files have been copied and configured
+if [[ -z "$VTT_DIR/.env" ]] ; then
+    echo ".env file is missing (must copy from .env.template and configure)"
+    exit 1
+elif [[ -z "$VTT_DIR/config/ssl/ssl.config" ]] ; then
+    echo "config/ssl/ssl.config is missing (must copy from template and configure)"
+    exit 1
+fi
+
+# capture args
+args=("$0" "$@")
+
+# set script_dir
+script_dir="$(cd "$(dirname "$0")" && pwd)"
+cd "$script_dir/.."
+
+# exports to environment (replced with below)
+#grep -v '^#' .env | tr '\n' '\0' | xargs -0 env
+
+# only loads variables into current shell without exporting to environment
+while read -r line; do
+    eval "$line"
+done < <(grep -v '^#' .env)
+
+function usage {
+    cat <<-EOF
+Usage $0 {command}
+Commands:
+    - vdown [ service... ]      - fast down
+    - vup [ service... ]        - fast up
+    - vbounce [ service... ]    - fast restart
+    - create-selfcert           - create self-signed certificate
+    - renew-cert                - renew letsencrypt certificate
+    - upgrade-fvtt {timed-url}  - upgrade server (get timed url from foundryvtt.com)
+    - (docker compose commands are passed through)
+EOF
+}
+
+if [[ $# -eq 0 ]] ; then
+    usage
+    exit 1
+fi
+
+function _debugvar {
+    if [[ -n "$debug" ]] ; then echo $1=${!1} ; fi
+    #if $debug ; then echo $1 ; fi
+}
+
+function _down {
+    if [[ $# -eq 0 ]] ; then
+        docker compose $COMPOSE_OPTS down -t0
+        rm -rf $VTT_DIR/config/fvtt/Config/options.json.lock
+    elif [[ $1 = -* ]] ; then
+        echo "${args[1]} doesn't support flags"
+        exit 2
+    else
+        docker compose $COMPOSE_OPTS stop -t0 "${@:1}"
+        docker compose $COMPOSE_OPTS rm -f "${@:1}"
+        if [[ "${@:1}" =~ .*\<fvtt\>.* ]]; then
+            rm -rf $VTT_DIR/config/fvtt/Config/options.json.lock
+        fi
+    fi
+}
+
+function _up {
+    if [[ $# -eq 0 ]] ; then
+        docker compose $COMPOSE_OPTS up -d
+    elif [[ $1 = -* ]] ; then
+        echo "${args[1]} doesn't support flags"
+        exit 2
+    fi
+    docker compose $COMPOSE_OPTS up -d "${@:1}"
+}
+
+function _upgrade_fvtt {
+    if [[ $# -ne 1 ]] ; then
+	echo "upgrade-fvtt requires timed url as argument"
+        exit 3
+    fi
+    fvtt_url="$1"
+    fvtt_filename=$(echo "$fvtt_url" | perl -ne '/[^\/]*(?=\?)/ && print $&')
+    fvtt_file="$VTT_DIR/server/$fvtt_filename"
+    fvtt_dir="${fvtt_file%.*}"
+    if [[ -e "$fvtt_file" ]] ; then
+        echo "$fvtt_file exists, please remove"
+        exit 1
+    fi
+    if [[ -e "$fvtt_dir" ]] ; then
+        echo "$fvtt_dir exists, please remove"
+        exit 1
+    fi
+    curl -L -o "$fvtt_file" "$fvtt_url"
+	mkdir "$fvtt_dir"
+    unzip -d "$fvtt_dir" "$fvtt_file"
+    link_dir="$VTT_DIR/server/current"
+    rm "$link_dir"
+    ln -s "$(basename $fvtt_dir)" "$link_dir"
+}
+
+function _create_selfcert {
+    ssl_dir="$script_dir/../config/nginx/ssl"
+
+    openssl_conf=$(mktemp --tmpdir "$ssl_dir" -t openssl.conf.XXX)
+    envsubst <"$ssl_dir/openssl.conf.template" >"$openssl_conf"
+
+    openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout "$ssl_dir/fvtt.key" -out "$ssl_dir/fvtt.crt" -config "$openssl_conf"
+    echo "$ssl_dir/fvtt.crt must be added to client computer truststore"
+}
+
+function _renew_cert {
+    #if [[ ! -f $VTT_DIR/config/nginx/ssl/fvtt.crt ]] ; then
+    #    cp --preserve $VTT_DIR/config/certbot/live/$NGINX_LOCAL_SERVER/fullchain.pem $VTT_DIR/config/nginx/ssl/fvtt.crt   
+    #fi
+    #if [[ ! -f $VTT_DIR/config/nginx/ssl/fvtt.key ]] ; then
+    #   cp --preserve $VTT_DIR/config/certbot/live/$NGINX_LOCAL_SERVER/privkey.pem $VTT_DIR/config/nginx/ssl/fvtt.key
+    #fi
+    if [[ ! -e $VTT_DIR/config/certbot/live/${FQDN} ]] ; then
+        echo "letsencrypt certificate not installed (exiting)"
+        exit 5
+    fi
+    _up nginx
+    docker compose $COMPOSE_OPTS -f $VTT_DIR/docker-compose.certbot.yml run --rm certbot -v renew # --dry-run
+    cp --preserve $VTT_DIR/config/certbot/live/$NGINX_LOCAL_SERVER/fullchain.pem $VTT_DIR/config/nginx/ssl/fvtt.crt
+    cp --preserve $VTT_DIR/config/certbot/live/$NGINX_LOCAL_SERVER/privkey.pem $VTT_DIR/config/nginx/ssl/fvtt.key
+    _down nginx
+    _up nginx
+}
+
+case $1 in
+vdown)
+    _down ${@:2}
+    ;;
+vup)
+    _up ${@:2}
+    ;;
+vbounce)
+    _down ${@:2}
+    _up ${@:2}
+    ;;
+create-selfcert)
+    _create_selfcert
+    ;;
+renew-cert)
+    _renew_cert
+    ;;
+upgrade-fvtt)
+    _upgrade_fvtt ${@:2}
+    ;;
+help)
+    usage
+    exit 0
+    ;;
+*)
+    docker compose $COMPOSE_OPTS "${@}"
+    ;;
+esac

@@ -1,0 +1,42 @@
+# note: server name is irrelevant here as we not running vhosts on 8000
+#       i.e. if macbook advertises as macbook.local on bonjour
+#       so other machines may hit http://macbook.local:8000/ 
+
+server {
+    #listen 8000 default_server;
+    #listen [::]:8000 default_server;
+    listen 80;
+
+    server_name localhost ${NGINX_LOCAL_SERVER};
+    server_tokens off;
+
+    # increase max size to 5M (for artwork, music, etc)
+    client_max_body_size 100M;
+
+    # replace with the IP address of your resolver
+    #resolver 127.0.0.1;
+    resolver 8.8.4.4 8.8.8.8;  
+
+    location /www {
+        alias /var/www;
+    }
+
+    location / {
+        proxy_pass ${NGINX_PROXY_UPSTREAM};
+        proxy_http_version 1.1;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-Port $server_port;
+        #proxy_set_header X-Scheme $scheme;
+        #proxy_connect_timeout 3;
+        #proxy_send_timeout 30;
+        #proxy_read_timeout 30;
+    }
+}
+

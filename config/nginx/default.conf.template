@@ -1,0 +1,138 @@
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+
+    server_name ${FQDN};
+    server_tokens off;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    location / {
+        return 301 https://${FQDN}$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+
+    server_name ${FQDN};
+
+    # increase max size to 5M (for artwork, music, etc)
+    client_max_body_size 100M;
+
+    ssl_certificate /etc/nginx/templates/ssl/fvtt.crt;
+    ssl_certificate_key /etc/nginx/templates/ssl/fvtt.key;
+
+    ## SSL Config from Mozilla SSL Config Generator (See docker-compose.yml notes)
+
+    ssl_session_timeout 1d;
+    ssl_session_cache shared:FVTTSSL:2m;  # about 8000 sessions
+    ssl_session_tickets off;
+
+    # curl https://ssl-config.mozilla.org/ffdhe2048.txt > /path/to/dhparam
+    ssl_dhparam /etc/nginx/templates/ssl/dhparams.pem;
+
+    # intermediate configuration
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384;
+    ssl_prefer_server_ciphers off;
+
+    # HSTS (ngx_http_headers_module is required) (63072000 seconds)
+    add_header Strict-Transport-Security "max-age=63072000" always;
+
+    # OCSP stapling
+    ssl_stapling on;
+    ssl_stapling_verify on;
+
+    # verify chain of trust of OCSP response using Root CA and Intermediate certs
+    # ssl_trusted_certificate /path/to/root_CA_cert_plus_intermediates;
+
+    # replace with the IP address of your resolver
+    #resolver 127.0.0.1;
+    resolver 8.8.4.4 8.8.8.8;  
+
+    location /www {
+        alias /var/www;
+    }
+
+    location / {
+        proxy_pass ${NGINX_PROXY_UPSTREAM};
+        proxy_http_version 1.1;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-Port $server_port;
+        #proxy_set_header X-Scheme $scheme;
+        #proxy_connect_timeout 3;
+        #proxy_send_timeout 30;
+        #proxy_read_timeout 30;
+    }
+}
+
+server {
+    listen 3333 ssl http2;
+    listen [::]:3333 ssl http2;
+
+    server_name ${FQDN};
+
+    # increase max size to 5M (for artwork, music, etc)
+    client_max_body_size 5M;
+
+    ssl_certificate /etc/nginx/templates/ssl/fvtt.crt;
+    ssl_certificate_key /etc/nginx/templates/ssl/fvtt.key;
+
+    ## SSL Config from Mozilla SSL Config Generator (See docker-compose.yml notes)
+
+    ssl_session_timeout 1d;
+    ssl_session_cache shared:FVTTSSL:2m;  # about 8000 sessions
+    ssl_session_tickets off;
+
+    # curl https://ssl-config.mozilla.org/ffdhe2048.txt > /path/to/dhparam
+    ssl_dhparam /etc/nginx/templates/ssl/dhparams.pem;
+
+    # intermediate configuration
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384;
+    ssl_prefer_server_ciphers off;
+
+    # HSTS (ngx_http_headers_module is required) (63072000 seconds)
+    add_header Strict-Transport-Security "max-age=63072000" always;
+
+    # OCSP stapling
+    ssl_stapling on;
+    ssl_stapling_verify on;
+
+    # verify chain of trust of OCSP response using Root CA and Intermediate certs
+    # ssl_trusted_certificate /path/to/root_CA_cert_plus_intermediates;
+
+    # replace with the IP address of your resolver
+    #resolver 127.0.0.1;
+    resolver 8.8.4.4 8.8.8.8;  
+
+    location / {
+        proxy_pass http://ddb-proxy:3000;
+        proxy_http_version 1.1;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-Port $server_port;
+        #proxy_set_header X-Scheme $scheme;
+        #proxy_connect_timeout 3;
+        #proxy_send_timeout 30;
+        #proxy_read_timeout 30;
+    }
+}
+

@@ -1,0 +1,5 @@
+env_dir="$(cd "$(dirname $0)"; pwd)"
+export VTT_DIR="$env_dir"
+export SCRIPT_UID="$(id -u)"
+export SCRIPT_GID="$(id -g)"
+export PATH="$env_dir/bin:$PATH"
