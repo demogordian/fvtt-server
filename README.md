@@ -39,7 +39,7 @@ adduser --group fvtt
 usermod --append -G docker fvtt
 # write ssh keys to /home/fvtt/.ssh/authorized_keys
 cd ~ 
-git clone https://git-codecommit.us-west-2.amazonaws.com/v1/repos/fvtt
+git clone https://github.com/demogordian/fvtt
 cd ~/fvtt
 cp config/docker/daemon.json /etc/docker \
   && chown root.root /etc/docker/daemon.json \

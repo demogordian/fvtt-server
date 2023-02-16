@@ -165,7 +165,6 @@ upgrade-fvtt)
     ;;
 help)
     usage
-    exit 0
     ;;
 *)
     docker compose $COMPOSE_OPTS "${@}"

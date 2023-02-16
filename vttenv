@@ -3,3 +3,7 @@ export VTT_DIR="$env_dir"
 export SCRIPT_UID="$(id -u)"
 export SCRIPT_GID="$(id -g)"
 export PATH="$env_dir/bin:$PATH"
+# source any extra env scripts, acrobatics for portability
+if find -maxdepth 1 -name 'vttenv?*' | grep -q . ; then
+    for f in $VTT_DIR/vttenv?* ; do source $f ; done
+fi

@@ -26,6 +26,10 @@
 /mount/**
 !/mount/README.md
 
+# Ignore aux config
+/**/*5et
+/**/*.5et.*
+
 # Ignore .env file (persist to .env.template)
 /.env
 
