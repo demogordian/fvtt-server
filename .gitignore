@@ -4,6 +4,8 @@
 # certs
 /config/certbot/**
 !/config/certbot/README.md
+/config/certbot-lib/**
+!/config/certbot-lib/README.md
 /config/nginx/ssl/**
 /config/nginx/ssl/dhparams.pem
 !/config/nginx/ssl/openssl.conf.template
@@ -25,6 +27,9 @@
 # local mounts (these are backed up or downloaded separately)
 /mount/**
 !/mount/README.md
+!/mount/ext/
+/mount/ext/**
+!/mount/ext/README.md
 
 # Ignore aux config
 /**/*5et
