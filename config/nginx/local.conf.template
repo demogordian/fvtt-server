@@ -1,10 +1,5 @@
-# note: server name is irrelevant here as we not running vhosts on 8000
-#       i.e. if macbook advertises as macbook.local on bonjour
-#       so other machines may hit http://macbook.local:8000/ 
-
+# local server (access with http://$NGINX_LOCAL_SERVER/)
 server {
-    #listen 8000 default_server;
-    #listen [::]:8000 default_server;
     listen 80;
 
     server_name localhost ${NGINX_LOCAL_SERVER};
@@ -17,10 +12,13 @@ server {
     #resolver 127.0.0.1;
     resolver 8.8.4.4 8.8.8.8;  
 
+    include conf.d/*.include;
+
     location /www {
         alias /var/www;
     }
 
+    # pass through to vtt
     location / {
         proxy_pass ${NGINX_PROXY_UPSTREAM};
         proxy_http_version 1.1;

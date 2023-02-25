@@ -1,0 +1,40 @@
+function _debugvar {
+    if [[ -n "$debug" ]] ; then echo $1=${!1} ; fi
+    #if $debug ; then echo $1 ; fi
+}
+
+# verify vars
+if [[ -z "$VTT_DIR" ]] ; then
+    echo "VTT_DIR missing (must source vttenv)"
+    exit 1
+elif [[ -z "$SCRIPT_UID" ]] ; then
+    echo "SCRIPT_UID missing (must source vttenv)"
+    exit 1
+elif [[ -z "$SCRIPT_GID" ]] ; then
+    echo "SCRIPT_GID missing (must source vttenv)"
+    exit 1
+fi
+
+# verify template files have been copied and configured
+if [[ -z "$VTT_DIR/.env" ]] ; then
+    echo ".env file is missing (must copy from .env.template and configure)"
+    exit 1
+elif [[ -z "$VTT_DIR/config/ssl/ssl.config" ]] ; then
+    echo "config/ssl/ssl.config is missing (must copy from template and configure)"
+    exit 1
+fi
+
+# capture args
+args=("$0" "$@")
+
+# set script_dir
+script_dir="$(cd "$(dirname "$0")" && pwd)"
+cd "$script_dir/.."
+
+# exports to environment (replced with below)
+#grep -v '^#' .env | tr '\n' '\0' | xargs -0 env
+
+# only loads variables into current shell without exporting to environment
+while read -r line; do
+    eval "$line"
+done < <(grep -v '^#' .env)

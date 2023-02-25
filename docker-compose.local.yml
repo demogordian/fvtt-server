@@ -5,7 +5,7 @@ services:
 #
 #  fvtt:
 #    volumes:
-#      - ./mount/data/modules/ccvtt:/var/lib/fvtt/Data/data/modules/ccvtt:ro
+#      - ./mount/data/modules/mymodule:/var/lib/fvtt/Data/data/modules/mymodule:ro
 
   nginx:
     ports:
