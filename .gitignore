@@ -1,6 +1,11 @@
 # FVTT runtime in separate repo
 /config/fvtt/
 
+# Static Content (unless specified)
+/config/www/
+!/config/www/README.md
+!/config/www/certbot/README.md
+
 # certs
 /config/certbot/**
 !/config/certbot/README.md
