@@ -1,0 +1,10 @@
+version: '3'
+services:
+  nginx:
+    ports:
+      - "${DDB_PROXY_PORT}:3333"
+  ddb-proxy:
+    image: ghcr.io/mrprimate/ddb-proxy:latest
+    restart: "unless-stopped"
+    networks:
+      - fvtt

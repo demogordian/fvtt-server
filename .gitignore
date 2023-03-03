@@ -1,16 +1,9 @@
 # FVTT runtime in separate repo
 /config/fvtt/
 
-# Static Content (unless specified)
-/config/www/
-!/config/www/README.md
-!/config/www/certbot/README.md
-
 # certs
 /config/certbot/**
 !/config/certbot/README.md
-/config/certbot-lib/**
-!/config/certbot-lib/README.md
 /config/nginx/ssl/**
 /config/nginx/ssl/dhparams.pem
 !/config/nginx/ssl/openssl.conf.template
@@ -18,6 +11,10 @@
 # oauth authorized email list, custom logos, etc (keep default logo)
 /config/oauth/**
 !/config/oauth/vtt-512.png
+
+# ignore wikijs database
+/config/wiki/**
+!/config/wiki/README.md
 
 # logs
 /logs/**
@@ -32,13 +29,11 @@
 # local mounts (these are backed up or downloaded separately)
 /mount/**
 !/mount/README.md
-!/mount/ext/
-/mount/ext/**
-!/mount/ext/README.md
 
 # Ignore aux config
 /**/*5et
 /**/*.5et.*
+/**/5et.*
 
 # Ignore .env file (persist to .env.template)
 /.env
