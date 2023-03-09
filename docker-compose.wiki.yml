@@ -2,9 +2,13 @@ version: '3'
 services:
   nginx:
     ports:
-      - "${WIKI_PORT}:4333"
+      - "${WIKI_PORT}:4433"
   wiki:
-    image: ghcr.io/requarks/wiki:2
+    build: 
+      context: docker/wikijs
+      args:
+        - SCRIPT_UID
+        - SCRIPT_GID
     environment:
       DB_FILEPATH: /var/lib/wikijs/wikijs.sql
       DB_TYPE: sqlite
@@ -12,6 +16,7 @@ services:
       - .env
     volumes:
       - ./config/wiki:/var/lib/wikijs
+      - ./config/wiki/data:/wiki/data
     restart: "unless-stopped"
     networks:
       - fvtt

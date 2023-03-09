@@ -1,6 +1,11 @@
 # FVTT runtime in separate repo
 /config/fvtt/
 
+# Ignore static website stuff
+# (consider moving config/www and config/wiki under config/site/www and config/site/wiki and managing w/git)
+/config/www/**
+!/config/www/README.md
+
 # certs
 /config/certbot/**
 !/config/certbot/README.md
@@ -15,6 +20,9 @@
 # ignore wikijs database
 /config/wiki/**
 !/config/wiki/README.md
+!/config/wiki/data/
+/config/wiki/data/**
+!/config/wiki/data/README.md
 
 # logs
 /logs/**
