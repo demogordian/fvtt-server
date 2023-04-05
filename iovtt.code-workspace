@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"name": "FVTT Runtime (iovtt) (Q:)",
+			"path": "config/fvtt"
+		},
+		{
+			"name": "FVTT (iovtt) (Q:/fvtt)",
+			"path": "."
+		},
+		{
+			"name": "FVTT S3 (R:)",
+			"path": "R:/"
+		}
+	],
+	"settings": {}
+}

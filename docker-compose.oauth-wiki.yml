@@ -6,6 +6,7 @@ services:
   oauth-wiki:
     image: quay.io/oauth2-proxy/oauth2-proxy:latest
     environment:
+      OAUTH2_PROXY_CUSTOM_TEMPLATES_DIR: "/var/lib/oauth/templates"
       OAUTH2_PROXY_CUSTOM_SIGN_IN_LOGO: "/var/lib/oauth/${OAUTH_LOGO}"
       OAUTH2_PROXY_AUTHENTICATED_EMAILS_FILE: "/var/lib/oauth/authenticated_mails"
       OAUTH2_PROXY_UPSTREAMS: "http://wiki:3000/"
