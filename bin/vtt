@@ -52,6 +52,20 @@ function _up {
     docker compose $COMPOSE_OPTS up -d "${@:1}"
 }
 
+function _wl {
+    if [[ $# -eq 0 ]] ; then
+        _down nginx
+        _up nginx
+    elif [[ $# -eq 1 ]] ; then
+	echo ${@:1}
+        _down nginx
+        FVTT_WL=${@:1} _up nginx
+    elif [[ $# -gt 1 ]] ; then
+        echo "${args[1]} only supports a single ip"
+        exit 2
+    fi
+}
+
 function _upgrade_fvtt {
     if [[ $# -ne 1 ]] ; then
 	echo "upgrade-fvtt requires timed url as argument"
@@ -128,6 +142,9 @@ upgrade-fvtt)
     ;;
 help)
     usage
+    ;;
+wl)
+    _wl ${@:2}
     ;;
 *)
     docker compose $COMPOSE_OPTS "${@}"

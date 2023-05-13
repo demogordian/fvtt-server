@@ -1,8 +1,8 @@
-# local server (access with http://$NGINX_LOCAL_SERVER/)
+# local server (access with http://$NGINX_LOCAL_SERVER_NAME/)
 server {
     listen 80;
 
-    server_name localhost ${NGINX_LOCAL_SERVER};
+    server_name localhost ${NGINX_LOCAL_SERVER_NAME};
     server_tokens off;
 
     # increase max size to 5M (for artwork, music, etc)

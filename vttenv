@@ -1,4 +1,4 @@
-env_dir="$(cd "$(dirname $0)"; pwd)"
+env_dir="$(realpath .)"
 export VTT_DIR="$env_dir"
 export SCRIPT_UID="$(id -u)"
 export SCRIPT_GID="$(id -g)"
