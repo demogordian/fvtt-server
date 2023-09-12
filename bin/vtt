@@ -114,8 +114,8 @@ function _renew_cert {
     fi
     _up nginx
     docker compose $COMPOSE_OPTS -f $VTT_DIR/docker-compose.certbot.yml run --rm certbot -v renew # --dry-run
-    cp --preserve $VTT_DIR/config/certbot/live/$NGINX_LOCAL_SERVER/fullchain.pem $VTT_DIR/config/nginx/ssl/fvtt.crt
-    cp --preserve $VTT_DIR/config/certbot/live/$NGINX_LOCAL_SERVER/privkey.pem $VTT_DIR/config/nginx/ssl/fvtt.key
+    cp --preserve $VTT_DIR/config/certbot/live/${FQDN}/fullchain.pem $VTT_DIR/config/nginx/ssl/fvtt.crt
+    cp --preserve $VTT_DIR/config/certbot/live/${FQDN}/privkey.pem $VTT_DIR/config/nginx/ssl/fvtt.key
     _down nginx
     _up nginx
 }
