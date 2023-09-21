@@ -1,5 +1,6 @@
 # FVTT runtime in separate repo
 /config/fvtt/
+/config/fvtt*/
 
 # Ignore static website stuff
 # (consider moving config/www and config/wiki under config/site/www and config/site/wiki and managing w/git)
